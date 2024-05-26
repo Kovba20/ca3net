@@ -155,8 +155,8 @@ tau_rec_BC_I = 1080 * ms
 
 U_SE_PC_I = 0.33
 A_SE_PC_I = 289 * pA
-g_PC_I = 50 * nS
-tau_rec_PC_I = 200 * ms
+g_PC_I = 4.2 * nS
+tau_rec_PC_I = 1620 * ms
 
 #PC - PV+BC connection parameters from Ecker 2020
 
