@@ -119,17 +119,8 @@ dx_gaba/dt = -x_gaba/decay_PC_I : 1
 """
 
 eqs_BC = """
-dvm/dt = (-g_leak_BC*(vm-Vrest_BC) + g_leak_BC*delta_T_BC*exp((vm- theta_BC)/delta_T_BC) - w - (g_ampa*z*(vm-Erev_E) + g_gaba*z*(vm-Erev_I)))/Cm_BC : volt (unless refractory)
-dw/dt = (a_BC*(vm-Vrest_BC) - w) / tau_w_BC : amp
-dg_ampa/dt = (x_ampa - g_ampa) / rise_BC_E : 1
-dx_ampa/dt = -x_ampa/decay_BC_E : 1
-dg_gaba/dt = (x_gaba - g_gaba) / rise_BC_I : 1
-dx_gaba/dt = -x_gaba/decay_BC_I : 1
-"""
-
-eqs_BC_STP = """
-I_syn_ii_synapses : ampere
-dvm/dt = (-g_leak_BC*(vm-Vrest_BC) + g_leak_BC*delta_T_BC*exp((vm- theta_BC)/delta_T_BC) - w - g_ampa*z*(vm-Erev_E) + I_syn_ii_synapses)/Cm_BC : volt (unless refractory)
+g_syn_ii : siemens
+dvm/dt = (-g_leak_BC*(vm-Vrest_BC) + g_leak_BC*delta_T_BC*exp((vm- theta_BC)/delta_T_BC) - w - g_ampa*z*(vm-Erev_E) + g_syn_ii*(vm-Erev_I))/Cm_BC : volt (unless refractory)
 dw/dt = (a_BC*(vm-Vrest_BC) - w) / tau_w_BC : amp
 dg_ampa/dt = (x_ampa - g_ampa) / rise_BC_E : 1
 dx_ampa/dt = -x_ampa/decay_BC_E : 1
@@ -157,11 +148,12 @@ x += -U_SE*x
 
 U_SE_BC_I = 0.3
 A_SE_BC_I = 410 * pA
+G_BC_I = 5.8 * nS
 tau_rec_BC_I = 1080 * ms
 
 #PC - PV+BC connection parameters from Ecker 2020
 
-U_SE_BC_E = 0.23 #1-re veszem és a tau-t kicsire akkor olyan, mintha nem lenne STP
+U_SE_BC_E = 0.23 
 A_SE_BC_E = 300 * pA
 tau_rec_BC_E = 410 * ms
 
@@ -196,9 +188,9 @@ def run_simulation(wmx_PC_E, STDP_mode, cue, save, seed, verbose=True):
                       reset="vm=Vreset_PC; w+=b_PC", refractory=tref_PC, method="exponential_euler")
     PCs.vm = Vrest_PC; PCs.g_ampa = 0.0; PCs.g_ampaMF = 0.0; PCs.g_gaba = 0.0
 
-    BCs = NeuronGroup(nBCs, model=eqs_BC_STP, threshold="vm>spike_th_BC",
+    BCs = NeuronGroup(nBCs, model=eqs_BC, threshold="vm>spike_th_BC",
                       reset="vm=Vreset_BC; w+=b_BC", refractory=tref_BC, method="exponential_euler")
-    BCs.vm  = Vrest_BC
+    BCs.vm  = Vrest_BC; BCs.g_ampa =0.0
 
     MF = PoissonGroup(nPCs, rate_MF)
     C_PC_MF = Synapses(MF, PCs, on_pre="x_ampaMF+=norm_PC_MF*w_PC_MF")
@@ -227,16 +219,16 @@ def run_simulation(wmx_PC_E, STDP_mode, cue, save, seed, verbose=True):
     C_BC_I = Synapses(BCs, BCs, model="""
                     dx/dt =  z/tau_rec   : 1 (clock-driven) # recovered
                     dy/dt = -y/tau_inact : 1 (clock-driven) # active
-                    A_SE : ampere
+                    A_SE : siemens
                     U_SE : 1
                     tau_inact : second
                     tau_rec : second
                     z = 1 - x - y : 1 # inactive
-                    I_syn_ii_synapses_post = A_SE*y : ampere (summed)
+                    g_syn_ii_post = A_SE*y : siemens (summed)
                     """
                     , on_pre=synapses_action, method="exponential_euler")
     C_BC_I.connect(p=connection_prob_BC)
-    C_BC_I.x = 1; C_BC_I.U_SE = U_SE_BC_I; C_BC_I.A_SE = A_SE_BC_I; C_BC_I.tau_rec = tau_rec_BC_I; C_BC_I.tau_inact = decay_BC_I 
+    C_BC_I.x = 1; C_BC_I.U_SE = U_SE_BC_I; C_BC_I.A_SE = G_BC_I; C_BC_I.tau_rec = tau_rec_BC_I; C_BC_I.tau_inact = decay_BC_I 
 
     SM_PC = SpikeMonitor(PCs)
     SM_BC = SpikeMonitor(BCs)
