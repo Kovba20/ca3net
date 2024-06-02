@@ -108,7 +108,7 @@ b_BC = 0.916098931234532 * pA
 tau_w_BC = 178.581099914024 * ms
 
 eqs_PC = """
-dvm/dt = (-g_leak_PC*(vm-Vrest_PC) + g_leak_PC*delta_T_PC*exp((vm- theta_PC)/delta_T_PC) - w - (g_ampa+g_ampaMF)*z*(vm-Erev_E) + g_syn_ie*(vm-Erev_I))/Cm_PC : volt (unless refractory)
+dvm/dt = (-g_leak_PC*(vm-Vrest_PC) + g_leak_PC*delta_T_PC*exp((vm- theta_PC)/delta_T_PC) - w - (g_ampa+g_ampaMF)*z*(vm-Erev_E) - g_syn_ie*(vm-Erev_I))/Cm_PC : volt (unless refractory)
 dw/dt = (a_PC*(vm-Vrest_PC) - w) / tau_w_PC : amp
 dg_ampa/dt = (x_ampa - g_ampa) / rise_PC_E : 1
 dx_ampa/dt = -x_ampa / decay_PC_E : 1
@@ -119,7 +119,7 @@ g_syn_ie : siemens
 
 eqs_BC = """
 g_syn_ii : siemens
-dvm/dt = (-g_leak_BC*(vm-Vrest_BC) + g_leak_BC*delta_T_BC*exp((vm- theta_BC)/delta_T_BC) - w - g_ampa*z*(vm-Erev_E) + g_syn_ii*(vm-Erev_I))/Cm_BC : volt (unless refractory)
+dvm/dt = (-g_leak_BC*(vm-Vrest_BC) + g_leak_BC*delta_T_BC*exp((vm- theta_BC)/delta_T_BC) - w - g_ampa*z*(vm-Erev_E) - g_syn_ii*(vm-Erev_I))/Cm_BC : volt (unless refractory)
 dw/dt = (a_BC*(vm-Vrest_BC) - w) / tau_w_BC : amp
 dg_ampa/dt = (x_ampa - g_ampa) / rise_BC_E : 1
 dx_ampa/dt = -x_ampa/decay_BC_E : 1
