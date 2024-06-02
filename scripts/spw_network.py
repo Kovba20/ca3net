@@ -120,7 +120,7 @@ dx_gaba/dt = -x_gaba/decay_PC_I : 1
 
 eqs_BC = """
 g_syn_ii : siemens
-dvm/dt = (-g_leak_BC*(vm-Vrest_BC) + g_leak_BC*delta_T_BC*exp((vm- theta_BC)/delta_T_BC) - w - g_ampa*z*(vm-Erev_E) + g_syn_ii*(vm-Erev_I))/Cm_BC : volt (unless refractory)
+dvm/dt = (-g_leak_BC*(vm-Vrest_BC) + g_leak_BC*delta_T_BC*exp((vm- theta_BC)/delta_T_BC) - w - g_ampa*z*(vm-Erev_E) - g_syn_ii*(vm-Erev_I))/Cm_BC : volt (unless refractory)
 dw/dt = (a_BC*(vm-Vrest_BC) - w) / tau_w_BC : amp
 dg_ampa/dt = (x_ampa - g_ampa) / rise_BC_E : 1
 dx_ampa/dt = -x_ampa/decay_BC_E : 1
@@ -148,8 +148,8 @@ x += -U_SE*x
 
 U_SE_BC_I = 0.3
 A_SE_BC_I = 410 * pA
-G_BC_I = 5.8 * nS
-tau_rec_BC_I = 1080 * ms
+G_BC_I = 70 * nS
+tau_rec_BC_I = 100 * ms
 
 #PC - PV+BC connection parameters from Ecker 2020
 
