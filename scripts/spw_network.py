@@ -151,11 +151,16 @@ dx_ampa/dt = -x_ampa/decay_BC_E : 1
 
 # Short-term plasticity with the Tsodyks, Pawelzik, Markram 1998 model
 
+synapses_action = """
+y += U_SE*x # important: update y first
+x += -U_SE*x
+"""
+
 # Booleans to determine wether the STP version is used or the normal one
 
-is_PC_I_STP = False
+is_PC_I_STP = True
 
-is_BC_I_STP = False
+is_BC_I_STP = True
 
 # PV+BC - PV+BC connection parameters from Kohus 2016
 
@@ -205,7 +210,7 @@ def run_simulation(wmx_PC_E, STDP_mode, cue, save, seed, verbose=True):
         raise ValueError("STDP_mode has to be either 'sym' or 'asym'!")
 
     if is_PC_I_STP:
-        PCs = NeuronGroup(nPCs, model=eqs_PC, threshold="vm>spike_th_PC",
+        PCs = NeuronGroup(nPCs, model=eqs_PC_STP, threshold="vm>spike_th_PC",
                       reset="vm=Vreset_PC; w+=b_PC", refractory=tref_PC, method="exponential_euler")
         PCs.vm = Vrest_PC; PCs.g_ampa = 0.0; PCs.g_ampaMF = 0.0
     else:
@@ -214,7 +219,7 @@ def run_simulation(wmx_PC_E, STDP_mode, cue, save, seed, verbose=True):
         PCs.vm = Vrest_PC; PCs.g_ampa = 0.0; PCs.g_ampaMF = 0.0; PCs.g_gaba = 0.0
 
     if is_BC_I_STP:
-        BCs = NeuronGroup(nBCs, model=eqs_BC, threshold="vm>spike_th_BC",
+        BCs = NeuronGroup(nBCs, model=eqs_BC_STP, threshold="vm>spike_th_BC",
                       reset="vm=Vreset_BC; w+=b_BC", refractory=tref_BC, method="exponential_euler")
         BCs.vm  = Vrest_BC; BCs.g_ampa = 0.0
     else:
@@ -287,7 +292,7 @@ def run_simulation(wmx_PC_E, STDP_mode, cue, save, seed, verbose=True):
     RM_BC = PopulationRateMonitor(BCs)
 
     selection = np.arange(0, nPCs, 20)   # subset of neurons for recoring variables
-    StateM_PC = StateMonitor(PCs, variables=["vm", "w", "g_ampa", "g_ampaMF", "g_syn_ie"], record=selection.tolist(), dt=0.1*ms)
+    StateM_PC = StateMonitor(PCs, variables=["vm", "w", "g_ampa", "g_ampaMF"], record=selection.tolist(), dt=0.1*ms)
     StateM_BC = StateMonitor(BCs, "vm", record=[nBCs/2], dt=0.1*ms)
 
     if verbose:

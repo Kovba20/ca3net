@@ -116,8 +116,12 @@ def _fisher(Pxx):
     :return p_val: p-value
     """
     fisher_g = Pxx.max() / np.sum(Pxx)
-    n = len(Pxx); upper_lim = int(np.floor(1. / fisher_g))
-    p_val = np.sum([np.power(-1, i-1) * comb(n, i) * np.power((1-i*fisher_g), n-1) for i in range(1, upper_lim)])
+    n = len(Pxx); upper_lim = np.floor(1. / fisher_g)
+    if upper_lim > 0:
+        upper_lim = int(upper_lim)
+        p_val = np.sum([np.power(-1, i-1) * comb(n, i) * np.power((1-i*fisher_g), n-1) for i in range(1, upper_lim)])
+    else:
+        p_val = 0
     return p_val
 
 
